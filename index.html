@@ -22,7 +22,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* Dashboard mejorado */
         .dashboard { 
             background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
             border: 1px solid #333; 
@@ -37,7 +36,6 @@
         .stat span { font-size: 0.7em; color: var(--gray); font-weight: bold; }
         .stat h3 { margin: 5px 0; font-size: 1.3em; }
 
-        /* Buscador y Filtros */
         .filters { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
         input[type="date"], .search-bar { 
@@ -46,12 +44,11 @@
             color: #fff; 
             padding: 14px; 
             border-radius: 10px; 
-            font-size: 16px; /* Evita zoom automático en iPhone */
+            font-size: 16px; 
             outline: none;
         }
         .search-bar { width: calc(100% - 28px); margin-top: 10px; border-color: #444; }
         
-        /* Botones de Vista */
         .view-selector { display: flex; gap: 8px; margin-bottom: 20px; }
         .view-btn { 
             flex: 1; 
@@ -67,7 +64,6 @@
         }
         .view-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-        /* Tarjetas de Clientes */
         .card { 
             background: var(--card); 
             border: 1px solid #222; 
@@ -75,9 +71,7 @@
             border-radius: 15px; 
             margin-bottom: 15px; 
             position: relative;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .badge { position: absolute; top: 15px; right: 15px; font-size: 0.65em; padding: 4px 10px; border-radius: 6px; font-weight: 800; }
         .badge-deuda { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
@@ -92,7 +86,6 @@
         
         .btn-group { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
         .btn { flex: 1; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
         .btn-abono { background: #222; color: #fff; border: 1px solid #444; }
         .btn-total { background: #fff; color: #000; }
         
@@ -100,34 +93,21 @@
         .btn-delete { background: none; color: #555; border: 1px solid #333; width: 100%; margin-top: 50px; padding: 12px; border-radius: 10px; font-size: 0.75em; cursor: pointer; }
 
         .fab { 
-            position: fixed; 
-            bottom: 30px; 
-            right: 25px; 
-            background: var(--green); 
-            color: #000; 
-            width: 65px; 
-            height: 65px; 
-            border-radius: 20px; 
-            font-size: 40px; 
-            border: none; 
-            box-shadow: 0 10px 25px rgba(68,255,68,0.3); 
-            z-index: 10; 
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; bottom: 30px; right: 25px; background: var(--green); color: #000; 
+            width: 65px; height: 65px; border-radius: 20px; font-size: 40px; border: none; 
+            box-shadow: 0 10px 25px rgba(68,255,68,0.3); z-index: 10; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
 
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
-        .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 88%; border: 1px solid #333; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-        h2 { margin-top: 0; color: #fff; font-size: 1.5em; }
+        .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 88%; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="dashboard">
         <div class="main-stat">
-            <span>VENTAS DEL MES</span>
+            <span id="label-totales">VENTAS DEL PERÍODO</span>
             <h1 id="total-ventas-mes">$0</h1>
         </div>
         <div class="sub-stats">
@@ -168,10 +148,11 @@
     </div>
 
     <script>
-        // Versión actualizada para evitar conflictos con versiones anteriores
+        // Mantenemos la misma clave de almacenamiento para no perder tus datos actuales
         let storage = JSON.parse(localStorage.getItem('app_v_final')) || { deudas: [], historialPagos: [], pagados: [] };
         let vistaActual = 'deudas';
 
+        // Inicializar fechas con el mes actual
         const hoy = new Date();
         document.getElementById('f-desde').value = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
         document.getElementById('f-hasta').value = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -237,24 +218,30 @@
         function render() {
             const lista = document.getElementById('lista-clientes');
             const search = document.getElementById('search').value.toLowerCase().trim();
-            const mesH = new Date().getMonth();
-            const añoH = new Date().getFullYear();
+            const fDesde = document.getElementById('f-desde').value;
+            const fHasta = document.getElementById('f-hasta').value;
+            
             let cobradoM = 0, deudaM = 0;
             lista.innerHTML = '';
 
+            // CORRECCIÓN: Los totales ahora suman según el rango de fecha seleccionado arriba
             storage.historialPagos.forEach(p => {
-                const fp = new Date(p.fechaPago);
-                if(fp.getMonth() === mesH && fp.getFullYear() === añoH) cobradoM += p.monto;
+                if(p.fechaPago >= fDesde && p.fechaPago <= fHasta) {
+                    cobradoM += p.monto;
+                }
             });
+
             storage.deudas.forEach(d => {
-                const fd = new Date(d.fecha);
-                if(fd.getMonth() === mesH && fd.getFullYear() === añoH) deudaM += d.montoPendiente;
+                if(d.fecha >= fDesde && d.fecha <= fHasta) {
+                    deudaM += d.montoPendiente;
+                }
             });
 
             let fuente = search !== "" ? [...storage.deudas, ...storage.pagados] : (vistaActual === 'deudas' ? storage.deudas : storage.pagados);
 
             fuente.forEach(d => {
-                if(d.nombre.toLowerCase().includes(search)) {
+                // Filtramos la lista visible por fecha y búsqueda
+                if(d.nombre.toLowerCase().includes(search) && d.fecha >= fDesde && d.fecha <= fHasta) {
                     const esDeuda = d.montoPendiente > 0;
                     lista.innerHTML += `
                         <div class="card">
