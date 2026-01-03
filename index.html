@@ -38,7 +38,7 @@
 
         .filters { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        input[type="date"], .search-bar { 
+        input[type="date"], .input-estilo, .search-bar { 
             background: #1a1a1a; 
             border: 1px solid #333; 
             color: #fff; 
@@ -46,6 +46,7 @@
             border-radius: 10px; 
             font-size: 16px; 
             outline: none;
+            width: calc(100% - 30px);
         }
         .search-bar { width: calc(100% - 28px); margin-top: 10px; border-color: #444; }
         
@@ -73,11 +74,15 @@
             position: relative;
         }
         
-        .badge { position: absolute; top: 15px; right: 15px; font-size: 0.65em; padding: 4px 10px; border-radius: 6px; font-weight: 800; }
+        .actions-top { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; align-items: center; }
+        .btn-mini { background: none; border: none; color: var(--gray); font-size: 1.2em; cursor: pointer; padding: 5px; }
+        .btn-eliminar-card { color: var(--red); opacity: 0.6; }
+
+        .badge { font-size: 0.65em; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; }
         .badge-deuda { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
         .badge-pago { background: rgba(68,255,68,0.15); color: var(--green); border: 1px solid rgba(68,255,68,0.3); }
         
-        .client-info b { font-size: 1.3em; color: #fff; display: block; margin-bottom: 4px; }
+        .client-info b { font-size: 1.3em; color: #fff; display: block; margin-bottom: 4px; padding-right: 60px; }
         .client-info small { color: var(--gray); font-size: 0.8em; }
         
         .amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; }
@@ -90,7 +95,7 @@
         .btn-total { background: #fff; color: #000; }
         
         .btn-excel { background: var(--green); color: #000; width: 100%; margin-top: 10px; border-radius: 10px; padding: 14px; font-weight: 800; border: none; cursor: pointer; }
-        .btn-delete { background: none; color: #555; border: 1px solid #333; width: 100%; margin-top: 50px; padding: 12px; border-radius: 10px; font-size: 0.75em; cursor: pointer; }
+        .btn-delete-all { background: none; color: #555; border: 1px solid #333; width: 100%; margin-top: 50px; padding: 12px; border-radius: 10px; font-size: 0.75em; cursor: pointer; }
 
         .fab { 
             position: fixed; bottom: 30px; right: 25px; background: var(--green); color: #000; 
@@ -101,6 +106,7 @@
 
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 88%; border: 1px solid #333; }
+        label { color: var(--gray); font-size: 0.8em; font-weight: bold; display: block; margin-bottom: 5px; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -118,11 +124,11 @@
 
     <div class="filters">
         <div class="filter-row">
-            <input type="date" id="f-desde" onchange="render()">
-            <input type="date" id="f-hasta" onchange="render()">
+            <div><label>Desde:</label><input type="date" id="f-desde" onchange="render()"></div>
+            <div><label>Hasta:</label><input type="date" id="f-hasta" onchange="render()"></div>
         </div>
         <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar cliente..." oninput="render()">
-        <button class="btn-excel" onclick="exportarExcel()">📥 EXPORTAR EXCEL</button>
+        <button class="btn-excel" onclick="exportarExcel()">📥 EXPORTAR EXCEL DEL PERÍODO</button>
     </div>
 
     <div class="view-selector">
@@ -132,33 +138,53 @@
 
     <div id="lista-clientes"></div>
 
-    <button class="btn-delete" onclick="borrarTodo()">Borrar todo el historial</button>
+    <button class="btn-delete-all" onclick="borrarTodo()">Borrar todo el historial</button>
 
-    <button class="fab" onclick="document.getElementById('modal').style.display='flex'">+</button>
+    <button class="fab" onclick="abrirModal()">+</button>
 
     <div id="modal">
         <div class="modal-content">
-            <h2>Nueva Venta</h2>
-            <input type="text" id="nombre" class="search-bar" placeholder="Nombre completo" style="margin-bottom:12px">
-            <input type="number" id="total_v" class="search-bar" placeholder="Monto total ($)" style="margin-bottom:12px">
-            <input type="number" id="entrega" class="search-bar" placeholder="¿Cuánto entrega ahora? ($)" style="margin-bottom:20px">
-            <button onclick="guardarVenta()" style="width:100%; padding:16px; background:var(--green); border:none; border-radius:12px; font-weight:800; font-size:1em">GUARDAR VENTA</button>
+            <h2 id="modal-titulo">Nueva Venta</h2>
+            <input type="hidden" id="edit-id">
+            
+            <label>Fecha de la venta:</label>
+            <input type="date" id="fecha-carga" class="input-estilo" style="margin-bottom:12px">
+            
+            <label>Cliente:</label>
+            <input type="text" id="nombre" class="input-estilo" placeholder="Nombre completo" style="margin-bottom:12px">
+            
+            <label>Monto Total:</label>
+            <input type="text" id="total_v" class="input-estilo" placeholder="Monto total ($)" style="margin-bottom:12px" oninput="formatearInput(this)">
+            
+            <label>Entrega inicial (opcional):</label>
+            <input type="text" id="entrega" class="input-estilo" placeholder="¿Cuánto entrega ahora? ($)" style="margin-bottom:20px" oninput="formatearInput(this)">
+            
+            <button id="btn-guardar" onclick="guardarVenta()" style="width:100%; padding:16px; background:var(--green); border:none; border-radius:12px; font-weight:800; font-size:1em">GUARDAR VENTA</button>
             <button onclick="cerrarModal()" style="width:100%; background:none; color:var(--gray); border:none; margin-top:20px; font-size:0.9em">Cerrar</button>
         </div>
     </div>
 
     <script>
-        // Mantenemos la misma clave de almacenamiento para no perder tus datos actuales
         let storage = JSON.parse(localStorage.getItem('app_v_final')) || { deudas: [], historialPagos: [], pagados: [] };
         let vistaActual = 'deudas';
 
-        // Inicializar fechas con el mes actual
         const hoy = new Date();
         document.getElementById('f-desde').value = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
         document.getElementById('f-hasta').value = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
 
         function guardarData() { localStorage.setItem('app_v_final', JSON.stringify(storage)); render(); }
         
+        function formatearInput(input) {
+            let valor = input.value.replace(/\D/g, "");
+            if (valor === "") { input.value = ""; return; }
+            input.value = parseInt(valor).toLocaleString('es-AR');
+        }
+
+        function limpiarPuntos(texto) {
+            if(!texto) return 0;
+            return parseFloat(texto.toString().replace(/\./g, "").replace(/,/g, "")) || 0;
+        }
+
         function cambiarVista(v) { 
             vistaActual = v; 
             document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
@@ -166,42 +192,102 @@
             render(); 
         }
 
+        function abrirModal() {
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('modal-titulo').innerText = "Nueva Venta";
+            document.getElementById('btn-guardar').innerText = "GUARDAR VENTA";
+            document.getElementById('edit-id').value = "";
+            document.getElementById('fecha-carga').value = new Date().toISOString().split('T')[0];
+        }
+
         function cerrarModal() {
             document.getElementById('modal').style.display = 'none';
             document.getElementById('nombre').value = '';
             document.getElementById('total_v').value = '';
             document.getElementById('entrega').value = '';
+            document.getElementById('edit-id').value = '';
         }
 
         function guardarVenta() {
+            const idEdit = document.getElementById('edit-id').value;
             const nom = document.getElementById('nombre').value.trim();
-            const total = parseFloat(document.getElementById('total_v').value);
-            const entrega = parseFloat(document.getElementById('entrega').value) || 0;
-            const fecha = new Date().toISOString().split('T')[0];
+            const total = limpiarPuntos(document.getElementById('total_v').value);
+            const entrega = limpiarPuntos(document.getElementById('entrega').value);
+            const fechaManual = document.getElementById('fecha-carga').value;
             
-            if(nom && total) {
-                if(entrega > 0) storage.historialPagos.push({ id: Date.now()+1, nombre: nom, monto: entrega, fechaPago: fecha });
-                if(total - entrega <= 0) {
-                    storage.pagados.push({ id: Date.now(), nombre: nom, totalOriginal: total, montoPendiente: 0, fecha: fecha, fechaCierre: fecha });
-                } else {
-                    storage.deudas.push({ id: Date.now(), nombre: nom, totalOriginal: total, montoPendiente: total - entrega, fecha: fecha });
+            if(!nom || total <= 0 || !fechaManual) return alert("Completa todos los datos");
+
+            if (idEdit) {
+                // BUSCAR EN AMBAS LISTAS PARA EDITAR
+                let idxDeuda = storage.deudas.findIndex(d => d.id == idEdit);
+                let idxPagado = storage.pagados.findIndex(p => p.id == idEdit);
+                let registro;
+
+                if (idxDeuda !== -1) {
+                    registro = storage.deudas[idxDeuda];
+                    registro.nombre = nom;
+                    registro.totalOriginal = total;
+                    registro.montoPendiente = total - entrega;
+                    registro.fecha = fechaManual;
+                    // Mover a pagados si ahora el saldo es 0
+                    if (registro.montoPendiente <= 0) {
+                        storage.pagados.push(storage.deudas.splice(idxDeuda, 1)[0]);
+                    }
+                } else if (idxPagado !== -1) {
+                    registro = storage.pagados[idxPagado];
+                    registro.nombre = nom;
+                    registro.totalOriginal = total;
+                    registro.montoPendiente = total - entrega;
+                    registro.fecha = fechaManual;
+                    // Mover a deudas si ahora hay saldo pendiente
+                    if (registro.montoPendiente > 0) {
+                        storage.deudas.push(storage.pagados.splice(idxPagado, 1)[0]);
+                    }
                 }
-                guardarData();
-                cerrarModal();
+            } else {
+                if(entrega > 0) storage.historialPagos.push({ id: Date.now()+1, nombre: nom, monto: entrega, fechaPago: fechaManual });
+                let nuevo = { id: Date.now(), nombre: nom, totalOriginal: total, montoPendiente: total - entrega, fecha: fechaManual };
+                if(nuevo.montoPendiente <= 0) storage.pagados.push(nuevo);
+                else storage.deudas.push(nuevo);
             }
+
+            guardarData();
+            cerrarModal();
+        }
+
+        function editarRegistro(id) {
+            let r = storage.deudas.find(d => d.id == id) || storage.pagados.find(p => p.id == id);
+            if(!r) return;
+
+            abrirModal();
+            document.getElementById('modal-titulo').innerText = "Editar Registro";
+            document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
+            document.getElementById('edit-id').value = r.id;
+            document.getElementById('fecha-carga').value = r.fecha;
+            document.getElementById('nombre').value = r.nombre;
+            document.getElementById('total_v').value = r.totalOriginal.toLocaleString('es-AR');
+            document.getElementById('entrega').value = (r.totalOriginal - r.montoPendiente).toLocaleString('es-AR');
+        }
+
+        function eliminarIndividual(id) {
+            if(!confirm("¿Eliminar este registro permanentemente?")) return;
+            storage.deudas = storage.deudas.filter(d => d.id != id);
+            storage.pagados = storage.pagados.filter(p => p.id != id);
+            storage.historialPagos = storage.historialPagos.filter(p => p.id != id && p.id != id+1);
+            guardarData();
         }
 
         function gestionarPago(id, esTotal) {
             const index = storage.deudas.findIndex(c => c.id === id);
             if(index === -1) return;
             const d = storage.deudas[index];
-            const monto = esTotal ? d.montoPendiente : parseFloat(prompt("¿Monto del abono?"));
+            const montoTexto = esTotal ? d.montoPendiente.toString() : prompt("¿Monto del abono?");
+            const monto = parseFloat(montoTexto);
 
             if(!isNaN(monto) && monto > 0) {
                 storage.historialPagos.push({ id: Date.now(), nombre: d.nombre, monto: monto, fechaPago: new Date().toISOString().split('T')[0] });
                 d.montoPendiente -= monto;
                 if(d.montoPendiente <= 0) {
-                    d.fechaCierre = new Date().toISOString().split('T')[0];
                     storage.pagados.push(storage.deudas.splice(index, 1)[0]);
                 }
                 guardarData();
@@ -224,66 +310,83 @@
             let cobradoM = 0, deudaM = 0;
             lista.innerHTML = '';
 
-            // CORRECCIÓN: Los totales ahora suman según el rango de fecha seleccionado arriba
             storage.historialPagos.forEach(p => {
-                if(p.fechaPago >= fDesde && p.fechaPago <= fHasta) {
-                    cobradoM += p.monto;
-                }
+                if(p.fechaPago >= fDesde && p.fechaPago <= fHasta) cobradoM += p.monto;
             });
 
             storage.deudas.forEach(d => {
-                if(d.fecha >= fDesde && d.fecha <= fHasta) {
-                    deudaM += d.montoPendiente;
-                }
+                if(d.fecha >= fDesde && d.fecha <= fHasta) deudaM += d.montoPendiente;
             });
 
             let fuente = search !== "" ? [...storage.deudas, ...storage.pagados] : (vistaActual === 'deudas' ? storage.deudas : storage.pagados);
+            fuente.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
             fuente.forEach(d => {
-                // Filtramos la lista visible por fecha y búsqueda
                 if(d.nombre.toLowerCase().includes(search) && d.fecha >= fDesde && d.fecha <= fHasta) {
                     const esDeuda = d.montoPendiente > 0;
                     lista.innerHTML += `
                         <div class="card">
+                            <div class="actions-top">
+                                <button class="btn-mini" onclick="editarRegistro(${d.id})">✏️</button>
+                                <button class="btn-mini btn-eliminar-card" onclick="eliminarIndividual(${d.id})">🗑️</button>
+                            </div>
                             <span class="badge ${esDeuda ? 'badge-deuda' : 'badge-pago'}">${esDeuda ? 'DEUDA' : 'PAGADO'}</span>
                             <div class="client-info">
                                 <b>${d.nombre}</b>
                                 <small>📅 ${d.fecha}</small>
                             </div>
                             <div class="amounts">
-                                <div class="val-total">Venta: $${d.totalOriginal.toLocaleString()}</div>
-                                ${esDeuda ? `<div class="val-pending">$${d.montoPendiente.toLocaleString()}</div>` : `<div style="color:var(--green); font-weight:bold; font-size:1.1em">SALDADO</div>`}
+                                <div class="val-total">Total: $${d.totalOriginal.toLocaleString('es-AR')}</div>
+                                ${esDeuda ? `<div class="val-pending">$${d.montoPendiente.toLocaleString('es-AR')}</div>` : `<div style="color:var(--green); font-weight:bold">SALDADO</div>`}
                             </div>
                             ${esDeuda ? `<div class="btn-group">
                                 <button class="btn btn-abono" onclick="gestionarPago(${d.id}, false)">ABONAR</button>
-                                <button class="btn btn-total" onclick="gestionarPago(${d.id}, true)">SALDAR TODO</button>
+                                <button class="btn btn-total" onclick="gestionarPago(${d.id}, true)">SALDAR</button>
                             </div>` : ''}
                         </div>`;
                 }
             });
 
-            document.getElementById('total-ventas-mes').innerText = `$${(cobradoM + deudaM).toLocaleString()}`;
-            document.getElementById('cobrado-mes').innerText = `$${cobradoM.toLocaleString()}`;
-            document.getElementById('deuda-mes').innerText = `$${deudaM.toLocaleString()}`;
+            document.getElementById('total-ventas-mes').innerText = `$${(cobradoM + deudaM).toLocaleString('es-AR')}`;
+            document.getElementById('cobrado-mes').innerText = `$${cobradoM.toLocaleString('es-AR')}`;
+            document.getElementById('deuda-mes').innerText = `$${deudaM.toLocaleString('es-AR')}`;
         }
 
         function exportarExcel() {
-            const d = document.getElementById('f-desde').value;
-            const h = document.getElementById('f-hasta').value;
-            let csv = `FECHA;CLIENTE;VENTA TOTAL;MONTO ADEUDA\n`;
+            const desde = document.getElementById('f-desde').value;
+            const hasta = document.getElementById('f-hasta').value;
+            if(!desde || !hasta) return alert("Selecciona un rango de fechas");
+            let csv = `LISTADO DE VENTAS (${desde} al ${hasta})\n\n`;
+            csv += `FECHA;CLIENTE;VENTA TOTAL;PAGO ACUMULADO;SALDO PENDIENTE;ESTADO\n`;
             const todasLasVentas = [...storage.deudas, ...storage.pagados];
+            todasLasVentas.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            let totalVendidoPeriodo = 0, totalCobradoPeriodo = 0, totalDeudaPeriodo = 0;
+
             todasLasVentas.forEach(v => {
-                if(v.fecha >= d && v.fecha <= h) {
-                    csv += `${v.fecha};${v.nombre.replace(/;/g, "")};${v.totalOriginal};${v.montoPendiente}\n`;
+                if(v.fecha >= desde && v.fecha <= hasta) {
+                    const cobrado = v.totalOriginal - v.montoPendiente;
+                    const estado = v.montoPendiente <= 0 ? "PAGADO" : "DEUDA";
+                    csv += `${v.fecha};${v.nombre.replace(/;/g, "")};${v.totalOriginal};${cobrado};${v.montoPendiente};${estado}\n`;
+                    totalVendidoPeriodo += v.totalOriginal;
+                    totalDeudaPeriodo += v.montoPendiente;
                 }
             });
+
+            storage.historialPagos.forEach(p => {
+                if(p.fechaPago >= desde && p.fechaPago <= hasta) totalCobradoPeriodo += p.monto;
+            });
+
+            csv += `\nRESUMEN DEL PERÍODO\n`;
+            csv += `TOTAL VENTAS;${totalVendidoPeriodo}\n`;
+            csv += `TOTAL COBRADO;${totalCobradoPeriodo}\n`;
+            csv += `TOTAL DEUDA PENDIENTE;${totalDeudaPeriodo}\n`;
+
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Ventas_${d}_al_${h}.csv`);
+            link.setAttribute("download", `Ventas_${desde}_al_${hasta}.csv`);
             link.click();
         }
-
         render();
     </script>
 </body>
