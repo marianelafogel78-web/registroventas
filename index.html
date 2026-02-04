@@ -8,112 +8,75 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#000000">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/6059/6059110.png">
 
     <style>
-        :root { --bg: #000; --card: #121212; --text: #eee; --gray: #888; --accent: #fff; --red: #ff4444; --green: #44ff44; --gold: #ffd700; }
+        :root { --bg: #000; --card: #121212; --text: #eee; --gray: #888; --accent: #fff; --red: #ff4444; --green: #44ff44; }
         body { 
-            background: var(--bg); 
-            color: var(--text); 
+            background: var(--bg); color: var(--text); 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            margin: 0; 
-            padding: 15px; 
-            padding-bottom: 120px; 
+            margin: 0; padding: 15px; padding-bottom: 120px; 
             -webkit-tap-highlight-color: transparent;
         }
         
         .dashboard { 
             background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            border: 1px solid #333; 
-            border-radius: 20px; 
-            padding: 20px; 
-            margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            border: 1px solid #333; border-radius: 20px; padding: 20px; margin-bottom: 20px;
         }
         .main-stat { text-align: center; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 15px; }
-        .main-stat h1 { margin: 5px 0; font-size: 2.5em; color: var(--accent); letter-spacing: -1px; }
+        .main-stat h1 { margin: 5px 0; font-size: 2.5em; color: var(--accent); }
         .sub-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .stat span { font-size: 0.7em; color: var(--gray); font-weight: bold; }
         .stat h3 { margin: 5px 0; font-size: 1.3em; }
 
         .filters { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        label { color: var(--gray); font-size: 0.75em; margin-left: 5px; display: block; margin-bottom: 4px; }
         input[type="date"], .input-estilo, .search-bar { 
-            background: #1a1a1a; 
-            border: 1px solid #333; 
-            color: #fff; 
-            padding: 14px; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            outline: none;
+            background: #1a1a1a; border: 1px solid #333; color: #fff; 
+            padding: 14px; border-radius: 10px; font-size: 16px; outline: none;
             width: calc(100% - 30px);
         }
         .search-bar { width: calc(100% - 28px); margin-top: 10px; border-color: #444; }
         
-        .view-selector { display: flex; gap: 8px; margin-bottom: 20px; }
-        .view-btn { 
-            flex: 1; 
-            background: #1a1a1a; 
-            border: 1px solid #333; 
-            color: var(--gray); 
-            padding: 12px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 0.8em; 
-            transition: 0.3s;
-        }
-        .view-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .btn-excel { background: var(--green); color: #000; width: 100%; margin-top: 15px; border-radius: 10px; padding: 14px; font-weight: 800; border: none; cursor: pointer; }
+        .btn-delete-all { background: none; color: #555; border: 1px solid #333; width: 100%; margin-top: 50px; padding: 12px; border-radius: 10px; font-size: 0.75em; cursor: pointer; }
 
         .card { 
-            background: var(--card); 
-            border: 1px solid #222; 
-            padding: 18px; 
-            border-radius: 15px; 
-            margin-bottom: 15px; 
-            position: relative;
+            background: var(--card); border: 1px solid #222; padding: 18px; 
+            border-radius: 15px; margin-bottom: 12px; position: relative;
         }
+        .card-pagada { opacity: 0.6; }
         
-        .actions-top { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; align-items: center; }
-        .btn-mini { background: none; border: none; color: var(--gray); font-size: 1.2em; cursor: pointer; padding: 5px; }
-        .btn-eliminar-card { color: var(--red); opacity: 0.6; }
+        .actions-top { position: absolute; top: 15px; right: 15px; display: flex; gap: 12px; align-items: center; }
+        .btn-mini { background: none; border: none; color: var(--gray); font-size: 1.3em; cursor: pointer; padding: 5px; }
+        .btn-cobrar { color: var(--green); font-size: 1.5em; }
 
-        .badge { font-size: 0.65em; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; }
+        .badge { font-size: 0.65em; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; margin-bottom: 8px; }
         .badge-deuda { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.3); }
         .badge-pago { background: rgba(68,255,68,0.15); color: var(--green); border: 1px solid rgba(68,255,68,0.3); }
         
-        .client-info b { font-size: 1.3em; color: #fff; display: block; margin-bottom: 4px; padding-right: 60px; }
+        .client-info b { font-size: 1.2em; color: #fff; display: block; padding-right: 90px; }
         .client-info small { color: var(--gray); font-size: 0.8em; }
         
         .amounts { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; }
-        .val-total { color: var(--gray); font-size: 0.9em; }
-        .val-pending { font-size: 1.4em; font-weight: 900; color: var(--red); }
+        .val-total { color: var(--gray); font-size: 0.85em; }
+        .val-pending { font-size: 1.3em; font-weight: 900; color: var(--red); }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
-        .btn { flex: 1; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 0.9em; transition: 0.2s; }
-        .btn-abono { background: #222; color: #fff; border: 1px solid #444; }
-        .btn-total { background: #fff; color: #000; }
-        
-        .btn-excel { background: var(--green); color: #000; width: 100%; margin-top: 10px; border-radius: 10px; padding: 14px; font-weight: 800; border: none; cursor: pointer; }
-        .btn-delete-all { background: none; color: #555; border: 1px solid #333; width: 100%; margin-top: 50px; padding: 12px; border-radius: 10px; font-size: 0.75em; cursor: pointer; }
-
         .fab { 
             position: fixed; bottom: 30px; right: 25px; background: var(--green); color: #000; 
             width: 65px; height: 65px; border-radius: 20px; font-size: 40px; border: none; 
-            box-shadow: 0 10px 25px rgba(68,255,68,0.3); z-index: 10; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+            z-index: 10; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 88%; border: 1px solid #333; }
-        label { color: var(--gray); font-size: 0.8em; font-weight: bold; display: block; margin-bottom: 5px; margin-left: 5px; }
     </style>
 </head>
 <body>
 
     <div class="dashboard">
         <div class="main-stat">
-            <span id="label-totales">VENTAS DEL PERÍODO</span>
+            <span style="font-size: 0.7em; color: var(--gray); font-weight: bold;">TOTAL VENTAS PERÍODO</span>
             <h1 id="total-ventas-mes">$0</h1>
         </div>
         <div class="sub-stats">
@@ -128,84 +91,54 @@
             <div><label>Hasta:</label><input type="date" id="f-hasta" onchange="render()"></div>
         </div>
         <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar cliente..." oninput="render()">
-        <button class="btn-excel" onclick="exportarExcel()">📥 EXPORTAR EXCEL DEL PERÍODO</button>
-    </div>
-
-    <div class="view-selector">
-        <button id="v-deudas" class="view-btn active" onclick="cambiarVista('deudas')">DEUDAS</button>
-        <button id="v-pagados" class="view-btn" onclick="cambiarVista('pagados')">PAGADOS</button>
+        <button class="btn-excel" onclick="exportarExcel()">📥 EXPORTAR EXCEL</button>
     </div>
 
     <div id="lista-clientes"></div>
 
-    <button class="btn-delete-all" onclick="borrarTodo()">Borrar todo el historial</button>
-
+    <button class="btn-delete-all" onclick="borrarTodo()">Limpiar Historial Completo</button>
     <button class="fab" onclick="abrirModal()">+</button>
 
     <div id="modal">
         <div class="modal-content">
-            <h2 id="modal-titulo">Nueva Venta</h2>
+            <h2 id="modal-titulo" style="margin-top:0">Nueva Venta</h2>
             <input type="hidden" id="edit-id">
-            
             <label>Fecha de la venta:</label>
             <input type="date" id="fecha-carga" class="input-estilo" style="margin-bottom:12px">
-            
             <label>Cliente:</label>
             <input type="text" id="nombre" class="input-estilo" placeholder="Nombre completo" style="margin-bottom:12px">
-            
             <label>Monto Total:</label>
             <input type="text" id="total_v" class="input-estilo" placeholder="Monto total ($)" style="margin-bottom:12px" oninput="formatearInput(this)">
-            
             <label>Entrega inicial (opcional):</label>
             <input type="text" id="entrega" class="input-estilo" placeholder="¿Cuánto entrega ahora? ($)" style="margin-bottom:20px" oninput="formatearInput(this)">
-            
-            <button id="btn-guardar" onclick="guardarVenta()" style="width:100%; padding:16px; background:var(--green); border:none; border-radius:12px; font-weight:800; font-size:1em">GUARDAR VENTA</button>
-            <button onclick="cerrarModal()" style="width:100%; background:none; color:var(--gray); border:none; margin-top:20px; font-size:0.9em">Cerrar</button>
+            <button onclick="guardarVenta()" style="width:100%; padding:16px; background:var(--green); border:none; border-radius:12px; font-weight:800;">GUARDAR VENTA</button>
+            <button onclick="cerrarModal()" style="width:100%; background:none; color:var(--gray); border:none; margin-top:20px;">Cerrar</button>
         </div>
     </div>
 
     <script>
         let storage = JSON.parse(localStorage.getItem('app_v_final')) || { deudas: [], historialPagos: [], pagados: [] };
-        let vistaActual = 'deudas';
+        if (!storage.historialPagos) storage.historialPagos = [];
 
         const hoy = new Date();
         document.getElementById('f-desde').value = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
         document.getElementById('f-hasta').value = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString().split('T')[0];
 
         function guardarData() { localStorage.setItem('app_v_final', JSON.stringify(storage)); render(); }
+        function formatearInput(i) { let v = i.value.replace(/\D/g, ""); i.value = v === "" ? "" : parseInt(v).toLocaleString('es-AR'); }
+        function limpiarPuntos(t) { return parseFloat(t.toString().replace(/\./g, "").replace(/,/g, "")) || 0; }
         
-        function formatearInput(input) {
-            let valor = input.value.replace(/\D/g, "");
-            if (valor === "") { input.value = ""; return; }
-            input.value = parseInt(valor).toLocaleString('es-AR');
-        }
-
-        function limpiarPuntos(texto) {
-            if(!texto) return 0;
-            return parseFloat(texto.toString().replace(/\./g, "").replace(/,/g, "")) || 0;
-        }
-
-        function cambiarVista(v) { 
-            vistaActual = v; 
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('v-' + v).classList.add('active');
-            render(); 
-        }
-
-        function abrirModal() {
-            document.getElementById('modal').style.display = 'flex';
-            document.getElementById('modal-titulo').innerText = "Nueva Venta";
-            document.getElementById('btn-guardar').innerText = "GUARDAR VENTA";
-            document.getElementById('edit-id').value = "";
+        function abrirModal() { 
+            document.getElementById('modal').style.display = 'flex'; 
             document.getElementById('fecha-carga').value = new Date().toISOString().split('T')[0];
         }
 
-        function cerrarModal() {
-            document.getElementById('modal').style.display = 'none';
-            document.getElementById('nombre').value = '';
-            document.getElementById('total_v').value = '';
-            document.getElementById('entrega').value = '';
-            document.getElementById('edit-id').value = '';
+        function cerrarModal() { 
+            document.getElementById('modal').style.display = 'none'; 
+            document.getElementById('nombre').value = ''; 
+            document.getElementById('total_v').value = ''; 
+            document.getElementById('entrega').value = ''; 
+            document.getElementById('edit-id').value = ''; 
         }
 
         function guardarVenta() {
@@ -215,53 +148,41 @@
             const entrega = limpiarPuntos(document.getElementById('entrega').value);
             const fechaManual = document.getElementById('fecha-carga').value;
             
-            if(!nom || total <= 0 || !fechaManual) return alert("Completa todos los datos");
+            if(!nom || total <= 0) return alert("Completa los datos");
 
-            if (idEdit) {
-                // BUSCAR EN AMBAS LISTAS PARA EDITAR
-                let idxDeuda = storage.deudas.findIndex(d => d.id == idEdit);
-                let idxPagado = storage.pagados.findIndex(p => p.id == idEdit);
-                let registro;
+            // Si editamos, removemos la versión anterior de ambas listas
+            storage.deudas = storage.deudas.filter(d => d.id != idEdit);
+            storage.pagados = storage.pagados.filter(p => p.id != idEdit);
 
-                if (idxDeuda !== -1) {
-                    registro = storage.deudas[idxDeuda];
-                    registro.nombre = nom;
-                    registro.totalOriginal = total;
-                    registro.montoPendiente = total - entrega;
-                    registro.fecha = fechaManual;
-                    // Mover a pagados si ahora el saldo es 0
-                    if (registro.montoPendiente <= 0) {
-                        storage.pagados.push(storage.deudas.splice(idxDeuda, 1)[0]);
-                    }
-                } else if (idxPagado !== -1) {
-                    registro = storage.pagados[idxPagado];
-                    registro.nombre = nom;
-                    registro.totalOriginal = total;
-                    registro.montoPendiente = total - entrega;
-                    registro.fecha = fechaManual;
-                    // Mover a deudas si ahora hay saldo pendiente
-                    if (registro.montoPendiente > 0) {
-                        storage.deudas.push(storage.pagados.splice(idxPagado, 1)[0]);
-                    }
-                }
-            } else {
-                if(entrega > 0) storage.historialPagos.push({ id: Date.now()+1, nombre: nom, monto: entrega, fechaPago: fechaManual });
-                let nuevo = { id: Date.now(), nombre: nom, totalOriginal: total, montoPendiente: total - entrega, fecha: fechaManual };
-                if(nuevo.montoPendiente <= 0) storage.pagados.push(nuevo);
-                else storage.deudas.push(nuevo);
+            let nuevo = { id: idEdit ? parseInt(idEdit) : Date.now(), nombre: nom, totalOriginal: total, montoPendiente: total - entrega, fecha: fechaManual };
+            
+            // Si es nueva y hay entrega, registrar en historial
+            if(!idEdit && entrega > 0) {
+                storage.historialPagos.push({ id: Date.now()+1, nombre: nom, monto: entrega, fechaPago: fechaManual });
             }
 
-            guardarData();
-            cerrarModal();
+            if(nuevo.montoPendiente <= 0) storage.pagados.push(nuevo);
+            else storage.deudas.push(nuevo);
+
+            guardarData(); cerrarModal();
+        }
+
+        function cobroRapido(id) {
+            const idx = storage.deudas.findIndex(c => c.id === id);
+            const d = storage.deudas[idx];
+            const monto = parseFloat(prompt(`Saldo: $${d.montoPendiente.toLocaleString('es-AR')}\n¿Monto a cobrar?`, d.montoPendiente));
+            
+            if(!isNaN(monto) && monto > 0) {
+                storage.historialPagos.push({ id: Date.now(), nombre: d.nombre, monto: monto, fechaPago: d.fecha });
+                d.montoPendiente -= monto;
+                if(d.montoPendiente <= 0) storage.pagados.push(storage.deudas.splice(idx, 1)[0]);
+                guardarData();
+            }
         }
 
         function editarRegistro(id) {
             let r = storage.deudas.find(d => d.id == id) || storage.pagados.find(p => p.id == id);
-            if(!r) return;
-
             abrirModal();
-            document.getElementById('modal-titulo').innerText = "Editar Registro";
-            document.getElementById('btn-guardar').innerText = "ACTUALIZAR";
             document.getElementById('edit-id').value = r.id;
             document.getElementById('fecha-carga').value = r.fecha;
             document.getElementById('nombre').value = r.nombre;
@@ -269,124 +190,63 @@
             document.getElementById('entrega').value = (r.totalOriginal - r.montoPendiente).toLocaleString('es-AR');
         }
 
-        function eliminarIndividual(id) {
-            if(!confirm("¿Eliminar este registro permanentemente?")) return;
-            storage.deudas = storage.deudas.filter(d => d.id != id);
-            storage.pagados = storage.pagados.filter(p => p.id != id);
-            storage.historialPagos = storage.historialPagos.filter(p => p.id != id && p.id != id+1);
-            guardarData();
-        }
-
-        function gestionarPago(id, esTotal) {
-            const index = storage.deudas.findIndex(c => c.id === id);
-            if(index === -1) return;
-            const d = storage.deudas[index];
-            const montoTexto = esTotal ? d.montoPendiente.toString() : prompt("¿Monto del abono?");
-            const monto = parseFloat(montoTexto);
-
-            if(!isNaN(monto) && monto > 0) {
-                storage.historialPagos.push({ id: Date.now(), nombre: d.nombre, monto: monto, fechaPago: new Date().toISOString().split('T')[0] });
-                d.montoPendiente -= monto;
-                if(d.montoPendiente <= 0) {
-                    storage.pagados.push(storage.deudas.splice(index, 1)[0]);
-                }
-                guardarData();
-            }
-        }
-
-        function borrarTodo() {
-            if(confirm("Se borrarán todos los registros. ¿Continuar?")) {
-                storage = { deudas: [], historialPagos: [], pagados: [] };
-                guardarData();
-            }
-        }
-
         function render() {
             const lista = document.getElementById('lista-clientes');
             const search = document.getElementById('search').value.toLowerCase().trim();
-            const fDesde = document.getElementById('f-desde').value;
-            const fHasta = document.getElementById('f-hasta').value;
+            const fD = document.getElementById('f-desde').value;
+            const fH = document.getElementById('f-hasta').value;
             
-            let cobradoM = 0, deudaM = 0;
+            let vMes = 0, cMes = 0, dMes = 0;
             lista.innerHTML = '';
 
-            storage.historialPagos.forEach(p => {
-                if(p.fechaPago >= fDesde && p.fechaPago <= fHasta) cobradoM += p.monto;
-            });
+            storage.deudas.forEach(d => { if(d.fecha >= fD && d.fecha <= fH) { vMes += d.totalOriginal; dMes += d.montoPendiente; }});
+            storage.pagados.forEach(p => { if(p.fecha >= fD && p.fecha <= fH) { vMes += p.totalOriginal; }});
+            storage.historialPagos.forEach(h => { if(h.fechaPago >= fD && h.fechaPago <= fH) { cMes += h.monto; }});
 
-            storage.deudas.forEach(d => {
-                if(d.fecha >= fDesde && d.fecha <= fHasta) deudaM += d.montoPendiente;
-            });
+            let todos = [...storage.deudas, ...storage.pagados].sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
-            let fuente = search !== "" ? [...storage.deudas, ...storage.pagados] : (vistaActual === 'deudas' ? storage.deudas : storage.pagados);
-            fuente.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-            fuente.forEach(d => {
-                if(d.nombre.toLowerCase().includes(search) && d.fecha >= fDesde && d.fecha <= fHasta) {
-                    const esDeuda = d.montoPendiente > 0;
+            todos.forEach(d => {
+                if (d.nombre.toLowerCase().includes(search) && (search !== "" || (d.fecha >= fD && d.fecha <= fH))) {
+                    const esD = d.montoPendiente > 0;
                     lista.innerHTML += `
-                        <div class="card">
+                        <div class="card ${!esD ? 'card-pagada' : ''}">
                             <div class="actions-top">
+                                ${esD ? `<button class="btn-mini btn-cobrar" onclick="cobroRapido(${d.id})">💵</button>` : ''}
                                 <button class="btn-mini" onclick="editarRegistro(${d.id})">✏️</button>
-                                <button class="btn-mini btn-eliminar-card" onclick="eliminarIndividual(${d.id})">🗑️</button>
+                                <button class="btn-mini" style="color:var(--red);opacity:0.6" onclick="if(confirm('¿Borrar?')) {storage.deudas=storage.deudas.filter(x=>x.id!=${d.id}); storage.pagados=storage.pagados.filter(x=>x.id!=${d.id}); guardarData();}">🗑️</button>
                             </div>
-                            <span class="badge ${esDeuda ? 'badge-deuda' : 'badge-pago'}">${esDeuda ? 'DEUDA' : 'PAGADO'}</span>
-                            <div class="client-info">
-                                <b>${d.nombre}</b>
-                                <small>📅 ${d.fecha}</small>
-                            </div>
+                            <span class="badge ${esD ? 'badge-deuda' : 'badge-pago'}">${esD ? 'DEUDA' : 'PAGADO'}</span>
+                            <div class="client-info"><b>${d.nombre}</b><small>📅 ${d.fecha}</small></div>
                             <div class="amounts">
                                 <div class="val-total">Total: $${d.totalOriginal.toLocaleString('es-AR')}</div>
-                                ${esDeuda ? `<div class="val-pending">$${d.montoPendiente.toLocaleString('es-AR')}</div>` : `<div style="color:var(--green); font-weight:bold">SALDADO</div>`}
+                                ${esD ? `<div class="val-pending">$${d.montoPendiente.toLocaleString('es-AR')}</div>` : `<div style="color:var(--green); font-weight:bold">SALDADO</div>`}
                             </div>
-                            ${esDeuda ? `<div class="btn-group">
-                                <button class="btn btn-abono" onclick="gestionarPago(${d.id}, false)">ABONAR</button>
-                                <button class="btn btn-total" onclick="gestionarPago(${d.id}, true)">SALDAR</button>
-                            </div>` : ''}
                         </div>`;
                 }
             });
 
-            document.getElementById('total-ventas-mes').innerText = `$${(cobradoM + deudaM).toLocaleString('es-AR')}`;
-            document.getElementById('cobrado-mes').innerText = `$${cobradoM.toLocaleString('es-AR')}`;
-            document.getElementById('deuda-mes').innerText = `$${deudaM.toLocaleString('es-AR')}`;
+            document.getElementById('total-ventas-mes').innerText = `$${vMes.toLocaleString('es-AR')}`;
+            document.getElementById('cobrado-mes').innerText = `$${cMes.toLocaleString('es-AR')}`;
+            document.getElementById('deuda-mes').innerText = `$${dMes.toLocaleString('es-AR')}`;
         }
 
         function exportarExcel() {
             const desde = document.getElementById('f-desde').value;
             const hasta = document.getElementById('f-hasta').value;
-            if(!desde || !hasta) return alert("Selecciona un rango de fechas");
-            let csv = `LISTADO DE VENTAS (${desde} al ${hasta})\n\n`;
-            csv += `FECHA;CLIENTE;VENTA TOTAL;PAGO ACUMULADO;SALDO PENDIENTE;ESTADO\n`;
-            const todasLasVentas = [...storage.deudas, ...storage.pagados];
-            todasLasVentas.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-            let totalVendidoPeriodo = 0, totalCobradoPeriodo = 0, totalDeudaPeriodo = 0;
-
-            todasLasVentas.forEach(v => {
+            let csv = `LISTADO VENTAS (${desde} al ${hasta})\nFECHA;CLIENTE;TOTAL;PAGADO;SALDO\n`;
+            [...storage.deudas, ...storage.pagados].forEach(v => {
                 if(v.fecha >= desde && v.fecha <= hasta) {
-                    const cobrado = v.totalOriginal - v.montoPendiente;
-                    const estado = v.montoPendiente <= 0 ? "PAGADO" : "DEUDA";
-                    csv += `${v.fecha};${v.nombre.replace(/;/g, "")};${v.totalOriginal};${cobrado};${v.montoPendiente};${estado}\n`;
-                    totalVendidoPeriodo += v.totalOriginal;
-                    totalDeudaPeriodo += v.montoPendiente;
+                    csv += `${v.fecha};${v.nombre};${v.totalOriginal};${v.totalOriginal - v.montoPendiente};${v.montoPendiente}\n`;
                 }
             });
-
-            storage.historialPagos.forEach(p => {
-                if(p.fechaPago >= desde && p.fechaPago <= hasta) totalCobradoPeriodo += p.monto;
-            });
-
-            csv += `\nRESUMEN DEL PERÍODO\n`;
-            csv += `TOTAL VENTAS;${totalVendidoPeriodo}\n`;
-            csv += `TOTAL COBRADO;${totalCobradoPeriodo}\n`;
-            csv += `TOTAL DEUDA PENDIENTE;${totalDeudaPeriodo}\n`;
-
             const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Ventas_${desde}_al_${hasta}.csv`);
+            link.download = `Ventas.csv`;
             link.click();
         }
+
+        function borrarTodo() { if(confirm("¿Borrar todo?")) { storage = { deudas: [], historialPagos: [], pagados: [] }; guardarData(); } }
         render();
     </script>
 </body>
