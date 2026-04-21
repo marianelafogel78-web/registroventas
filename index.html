@@ -106,8 +106,8 @@
             <label>Fecha de la venta:</label>
             <input type="date" id="fecha-carga" class="input-estilo" style="margin-bottom:12px">
             <label>Cliente:</label>
-            <input type="text" id="nombre" class="input-estilo" placeholder="Nombre completo" style="margin-bottom:12px">
-            <label>Monto Total:</label>
+            <input type="text" id="nombre" class="input-estilo" placeholder="Nombre completo" style="margin-bottom:12px" list="lista-contactos" autocomplete="off">
+            <datalist id="lista-contactos"></datalist>
             <input type="text" id="total_v" class="input-estilo" placeholder="Monto total ($)" style="margin-bottom:12px" oninput="formatearInput(this)">
             <label>Entrega inicial (opcional):</label>
             <input type="text" id="entrega" class="input-estilo" placeholder="¿Cuánto entrega ahora? ($)" style="margin-bottom:20px" oninput="formatearInput(this)">
@@ -128,11 +128,26 @@
         function formatearInput(i) { let v = i.value.replace(/\D/g, ""); i.value = v === "" ? "" : parseInt(v).toLocaleString('es-AR'); }
         function limpiarPuntos(t) { return parseFloat(t.toString().replace(/\./g, "").replace(/,/g, "")) || 0; }
         
-        function abrirModal() { 
-            document.getElementById('modal').style.display = 'flex'; 
-            document.getElementById('fecha-carga').value = new Date().toISOString().split('T')[0];
-        }
-
+       function abrirModal() { 
+    document.getElementById('modal').style.display = 'flex'; 
+    document.getElementById('fecha-carga').value = new Date().toISOString().split('T')[0];
+    
+    // Nueva lógica para cargar los nombres de clientes
+    const datalist = document.getElementById('lista-contactos');
+    const nombresUnicos = new Set();
+    
+    // Recolectamos nombres de las deudas y de los ya pagados
+    storage.deudas.forEach(d => nombresUnicos.add(d.nombre));
+    storage.pagados.forEach(p => nombresUnicos.add(p.nombre));
+    
+    // Limpiamos la lista anterior y cargamos los nombres únicos
+    datalist.innerHTML = '';
+    nombresUnicos.forEach(nombre => {
+        const option = document.createElement('option');
+        option.value = nombre;
+        datalist.appendChild(option);
+    });
+}
         function cerrarModal() { 
             document.getElementById('modal').style.display = 'none'; 
             document.getElementById('nombre').value = ''; 
