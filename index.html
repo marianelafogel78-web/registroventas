@@ -24,9 +24,9 @@
         }
         .main-stat { text-align: center; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 15px; }
         .main-stat h1 { margin: 5px 0; font-size: 2.5em; color: var(--accent); }
-        .sub-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .stat span { font-size: 0.7em; color: var(--gray); font-weight: bold; }
-        .stat h3 { margin: 5px 0; font-size: 1.3em; }
+       .sub-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+        .stat span { font-size: 0.6em; color: var(--gray); font-weight: bold; display: block; min-height: 24px; }
+        .stat h3 { margin: 5px 0; font-size: 1.1em; }
 
         .filters { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #222; }
         .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
@@ -70,25 +70,55 @@
 
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
         .modal-content { background: #111; padding: 25px; border-radius: 20px; width: 88%; border: 1px solid #333; }
+
+/* Estilos para las Pestañas */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { 
+            flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #333;
+            background: #111; color: var(--gray); font-weight: bold; cursor: pointer;
+        }
+        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        /* Estilo para la lista de clientes consolidada */
+        .cliente-row { 
+            background: #111; border: 1px solid #222; padding: 15px; 
+            border-radius: 12px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .cliente-info-resumen h4 { margin: 0 0 5px 0; color: #fff; font-size: 1.1em; }
+        .cliente-info-resumen p { margin: 0; font-size: 0.75em; color: var(--gray); }
+        .monto-resumen { text-align: right; }
+        .monto-resumen div { font-weight: 900; }
     </style>
 </head>
 <body>
+
+<div class="tabs">
+        <button id="tab-ventas" class="tab-btn active" onclick="cambiarPestaana('ventas')">🛒 VENTAS</button>
+        <button id="tab-clientes" class="tab-btn" onclick="cambiarPestaana('clientes')">👥 CLIENTES</button>
+    </div>
+
+    <!-- Contenedor para la nueva lista de clientes (oculto al inicio) -->
+    <div id="vista-clientes" style="display: none;">
+        <div id="lista-resumen-clientes"></div>
+    </div>
 
     <div class="dashboard">
         <div class="main-stat">
             <span style="font-size: 0.7em; color: var(--gray); font-weight: bold;">TOTAL VENTAS PERÍODO</span>
             <h1 id="total-ventas-mes">$0</h1>
         </div>
-        <div class="sub-stats">
-            <div class="stat"><span>COBRADO</span><h3 id="cobrado-mes" style="color: var(--green);">$0</h3></div>
-            <div class="stat"><span>DEUDA</span><h3 id="deuda-mes" style="color: var(--red);">$0</h3></div>
+       <div class="sub-stats">
+            <div class="stat"><span>COBRADO (MES)</span><h3 id="cobrado-mes" style="color: var(--green);">$0</h3></div>
+            <div class="stat"><span>DEUDA (MES)</span><h3 id="deuda-mes" style="color: var(--red);">$0</h3></div>
+            <div class="stat"><span>DEUDA ACUMULADA</span><h3 id="deuda-acumulada" style="color: #ff9900;">$0</h3></div>
         </div>
     </div>
 
     <div class="filters">
         <div class="filter-row">
-            <div><label>Desde:</label><input type="date" id="f-desde" onchange="render()"></div>
-            <div><label>Hasta:</label><input type="date" id="f-hasta" onchange="render()"></div>
+            <div><label>Desde:</label><input type="date" id="f-desde" onchange="render(); renderClientes();"></div>
+            <div><label>Hasta:</label><input type="date" id="f-hasta" onchange="render(); renderClientes();"></div>
         </div>
         <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar cliente..." oninput="render()">
         <button class="btn-excel" onclick="exportarExcel()">📥 EXPORTAR EXCEL</button>
@@ -211,8 +241,11 @@
             const fD = document.getElementById('f-desde').value;
             const fH = document.getElementById('f-hasta').value;
             
-            let vMes = 0, cMes = 0, dMes = 0;
+            let vMes = 0, cMes = 0, dMes = 0, dAcumulada = 0;
             lista.innerHTML = '';
+
+            // Suma de deuda histórica total (sin importar la fecha)
+            storage.deudas.forEach(d => { dAcumulada += d.montoPendiente; });
 
             storage.deudas.forEach(d => { if(d.fecha >= fD && d.fecha <= fH) { vMes += d.totalOriginal; dMes += d.montoPendiente; }});
             storage.pagados.forEach(p => { if(p.fecha >= fD && p.fecha <= fH) { vMes += p.totalOriginal; }});
@@ -243,6 +276,7 @@
             document.getElementById('total-ventas-mes').innerText = `$${vMes.toLocaleString('es-AR')}`;
             document.getElementById('cobrado-mes').innerText = `$${cMes.toLocaleString('es-AR')}`;
             document.getElementById('deuda-mes').innerText = `$${dMes.toLocaleString('es-AR')}`;
+            document.getElementById('deuda-acumulada').innerText = `$${dAcumulada.toLocaleString('es-AR')}`;
         }
 
         function exportarExcel() {
@@ -262,6 +296,118 @@
         }
 
         function borrarTodo() { if(confirm("¿Borrar todo?")) { storage = { deudas: [], historialPagos: [], pagados: [] }; guardarData(); } }
+        function cambiarPestaana(tipo) {
+            const btnVentas = document.getElementById('tab-ventas');
+            const btnClientes = document.getElementById('tab-clientes');
+            const dashboard = document.querySelector('.dashboard');
+            const filters = document.querySelector('.filters');
+            const listaClientes = document.getElementById('lista-clientes');
+            const btnDelete = document.querySelector('.btn-delete-all');
+            const fab = document.querySelector('.fab');
+            const vistaClientes = document.getElementById('vista-clientes');
+
+            if (tipo === 'ventas') {
+                // Activar pestaña Ventas
+                btnVentas.classList.add('active');
+                btnClientes.classList.remove('active');
+                
+                // Mostrar elementos de Ventas
+                dashboard.style.display = 'block';
+                filters.style.display = 'block';
+                listaClientes.style.display = 'block';
+                btnDelete.style.display = 'block';
+                fab.style.display = 'flex';
+                document.getElementById('search').style.display = 'block';
+                document.querySelector('.btn-excel').style.display = 'block';
+                
+                // Ocultar reporte de clientes
+                vistaClientes.style.display = 'none';
+            } else {
+                // Activar pestaña Clientes
+                btnClientes.classList.add('active');
+                btnVentas.classList.remove('active');
+                
+                // Ocultar elementos específicos de Ventas de la pantalla principal
+                listaClientes.style.display = 'none';
+                btnDelete.style.display = 'none';
+                fab.style.display = 'none'; // Ocultamos el "+" flotante para que no estorbe en el reporte
+                
+                // Mantenemos visibles el Dashboard y los Filtros de fecha (porque afectan al reporte)
+                dashboard.style.display = 'block';
+                filters.style.display = 'block';
+                
+                // Ocultamos el buscador de texto y el botón de Excel de la sección de filtros (solo dejamos las fechas)
+                document.getElementById('search').style.display = 'none';
+                document.querySelector('.btn-excel').style.display = 'none';
+                
+                // Mostrar reporte de clientes y cargarlo
+                vistaClientes.style.display = 'block';
+                renderClientes();
+            }
+        }
+
+function renderClientes() {
+            const contenedor = document.getElementById('lista-resumen-clientes');
+            const fD = document.getElementById('f-desde').value;
+            const fH = document.getElementById('f-hasta').value;
+            
+            contenedor.innerHTML = '';
+
+            // 1. Crear una lista única con todos los nombres de los clientes
+            const nombresUnicos = new Set();
+            storage.deudas.forEach(d => nombresUnicos.add(d.nombre));
+            storage.pagados.forEach(p => nombresUnicos.add(p.nombre));
+            
+            // Convertimos la lista a un array y la ordenamos alfabéticamente
+            const listaNombres = Array.from(nombresUnicos).sort((a, b) => a.localeCompare(b));
+
+            if (listaNombres.length === 0) {
+                contenedor.innerHTML = '<div style="text-align:center; color:var(--gray); padding:20px;">No hay clientes registrados</div>';
+                return;
+            }
+
+            // 2. Calcular las compras del mes y la deuda histórica por cada cliente
+            listaNombres.forEach(nombreCliente => {
+                let compraPeriodo = 0;
+                let deudaHistorica = 0;
+
+                // Recorremos las deudas vigentes
+                storage.deudas.forEach(d => {
+                    if (d.nombre === nombreCliente) {
+                        // Si entra en la fecha, suma a la compra del mes
+                        if (d.fecha >= fD && d.fecha <= fH) {
+                            compraPeriodo += d.totalOriginal;
+                        }
+                        // El saldo pendiente se suma SIEMPRE (es histórico)
+                        deudaHistorica += d.montoPendiente;
+                    }
+                });
+
+                // Recorremos las ventas ya pagadas
+                storage.pagados.forEach(p => {
+                    if (p.nombre === nombreCliente && p.fecha >= fD && p.fecha <= fH) {
+                        compraPeriodo += p.totalOriginal;
+                    }
+                });
+
+                // 3. Inyectar la tarjeta del cliente en el contenedor
+                contenedor.innerHTML += `
+                    <div class="cliente-row">
+                        <div class="cliente-info-resumen">
+                            <h4>${nombreCliente}</h4>
+                            <p>Compra del Período: <span style="color:#fff; font-weight:bold;">$${compraPeriodo.toLocaleString('es-AR')}</span></p>
+                        </div>
+                        <div class="monto-resumen">
+                            <span style="font-size:0.65em; color:var(--gray); font-weight:bold; display:block; margin-bottom:2px;">DEUDA TOTAL</span>
+                            <div style="color: ${deudaHistorica > 0 ? '#ff9900' : 'var(--green)'};">
+                                $${deudaHistorica.toLocaleString('es-AR')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         render();
     </script>
 </body>
