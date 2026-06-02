@@ -358,8 +358,11 @@ function renderClientes() {
             storage.deudas.forEach(d => nombresUnicos.add(d.nombre));
             storage.pagados.forEach(p => nombresUnicos.add(p.nombre));
             
-            // Convertimos la lista a un array y la ordenamos alfabéticamente
+           // Convertimos la lista a un array y la ordenamos alfabéticamente
             const listaNombres = Array.from(nombresUnicos).sort((a, b) => a.localeCompare(b));
+
+            // Colocamos la cantidad de clientes entre paréntesis en la pestaña
+            document.getElementById('tab-clientes').innerText = `👥 CLIENTES (${listaNombres.length})`;
 
             if (listaNombres.length === 0) {
                 contenedor.innerHTML = '<div style="text-align:center; color:var(--gray); padding:20px;">No hay clientes registrados</div>';
